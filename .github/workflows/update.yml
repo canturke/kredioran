@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+env:
+  # Node.js 20 kullanımdan kaldırılıyor; action'ları Node.js 24 ile çalıştır.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   guncelle-ve-yayinla:
     runs-on: ubuntu-latest

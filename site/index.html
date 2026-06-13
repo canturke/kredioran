@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kredi Hesaplama 2026 | İhtiyaç, Taşıt, Konut Kredisi Taksit Hesaplama — KrediOran</title>
+<meta name="description" content="Güncel en düşük faiz oranlarıyla saniyeler içinde kredi hesaplama. İhtiyaç, taşıt ve konut kredisi aylık taksit, toplam ödeme ve vergiler dahil gerçek maliyet. Karşılaştırma karmaşası yok — tek bakışta en iyi oran ve taksit.">
+<link rel="canonical" href="https://kredioran.com/">
+<meta property="og:title" content="Kredi Hesaplama 2026 — Saniyeler İçinde Taksit Hesapla">
+<meta property="og:description" content="En düşük faiz oranını ve örnek taksiti tek bakışta gör, KKDF+BSMV dahil gerçek maliyeti saniyeler içinde hesapla.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kredioran.com/">
+<meta property="og:locale" content="tr_TR">
+<meta name="robots" content="index, follow">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"KrediOran Kredi Hesaplama","url":"https://kredioran.com/","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"TRY"},"description":"İhtiyaç, taşıt ve konut kredisi için vergiler dahil aylık taksit ve toplam maliyet hesaplayıcı."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Kredi faizi nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Her taksit döneminde kalan anaparaya aylık faiz oranı uygulanır; ihtiyaç ve taşıt kredilerinde bu faizin üzerine %15 KKDF ve %15 BSMV eklenir. Aylık taksit, anüite formülüyle (eşit taksit) hesaplanır."}},
+{"@type":"Question","name":"Aylık taksit nasıl hesaplanır?","acceptedAnswer":{"@type":"Answer","text":"Taksit = Anapara × r × (1+r)^n / ((1+r)^n − 1) formülüyle hesaplanır. Burada r vergiler dahil brüt aylık faiz oranı, n ay cinsinden vadedir."}},
+{"@type":"Question","name":"KKDF ve BSMV nedir, krediye nasıl yansır?","acceptedAnswer":{"@type":"Answer","text":"KKDF (Kaynak Kullanımı Destekleme Fonu) ve BSMV (Banka ve Sigorta Muameleleri Vergisi) ihtiyaç ve taşıt kredilerinde ödenen faizin her biri %15'i kadar alınan vergilerdir. Konut kredileri bu vergilerden muaftır."}},
+{"@type":"Question","name":"En düşük faizli kredi hangi bankada?","acceptedAnswer":{"@type":"Answer","text":"Güncel değerlendirmelere göre ihtiyaç kredisinde DenizBank (%2,89), taşıt kredisinde Garanti BBVA (%2,85), konut kredisinde Ziraat Bankası (~%3,5) en düşük oranları sunmaktadır. Oranlar dönemsel olarak değişir."}}
+]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#2563EB; --navy-2:#1D4ED8; --ink:#22325E; --gray:#5C6FA0; --line:#DCE7FB;
+  --bg:#FFFFFF; --soft:#F4F8FF; --amber:#10B981; --amber-d:#059669; --green:#0E9F6E; --red:#F43F5E;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;max-width:100%}
+body{font-family:'Manrope',sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+/* Grid/flex çocukları içerik genişliğine göre taşmasın */
+.grid>*, .card, .tblscroll, .viz, .kpis, .kpi{min-width:0}
+img,svg{max-width:100%}
+h1,h2,h3,.display{font-family:'Sora',sans-serif}
+
+/* HEADER — LIGHT */
+header{background:linear-gradient(180deg,#FFFFFF 0%,#EAF2FF 100%);border-bottom:1px solid var(--line);padding:36px 0 34px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.5px;color:var(--navy)}
+.brand h1 span{color:var(--amber)}
+.brand p{color:var(--gray);font-size:clamp(13px,2vw,15px)}
+
+/* BÜYÜK ORAN KARTLARI */
+.ratebar{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.ratepill{background:#fff;border:2px solid var(--line);border-radius:18px;padding:20px 22px;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;text-align:left}
+.ratepill:hover{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 12px 28px rgba(37,99,235,.12)}
+.ratepill.active{border-color:var(--amber);box-shadow:0 0 0 2px var(--amber) inset,0 12px 28px rgba(16,185,129,.20)}
+.ratepill .t{font-size:13px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.08em}
+.ratepill .rate{font-family:'Sora';font-size:clamp(36px,6vw,48px);font-weight:800;color:var(--navy);line-height:1.1;margin:6px 0 2px}
+.ratepill .rate small{font-size:.45em;font-weight:700;color:var(--amber-d);vertical-align:middle}
+.ratepill .bank{font-size:clamp(15px,2.5vw,18px);font-weight:800;color:var(--amber-d)}
+.ratepill .meta{font-size:13px;color:var(--gray);margin-top:4px}
+.ratepill .example{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.ratepill .example span{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.05em}
+.ratepill .example b{font-family:'Sora';font-size:clamp(17px,3vw,21px);font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums}
+.src{margin-top:12px;font-size:12px;color:var(--gray)}
+.src a{color:var(--navy);font-weight:700}
+.herocta{display:inline-block;margin-top:14px;background:var(--navy);color:#fff;font:800 16px 'Manrope';text-decoration:none;border-radius:12px;padding:14px 26px;box-shadow:0 8px 20px rgba(37,99,235,.30)}
+.herocta:hover{background:var(--navy-2)}
+.chip{display:inline-block;font-size:12px;font-weight:800;border-radius:99px;padding:4px 11px;letter-spacing:.02em}
+.ratepill{position:relative}
+.bigicon{position:absolute;top:50px;right:20px;width:84px;height:84px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:46px;pointer-events:none}
+@media(max-width:380px){.bigicon{width:64px;height:64px;font-size:34px;right:14px}}
+.ratepill .rate,.ratepill .bank,.ratepill .meta{padding-right:100px}
+@media(max-width:380px){.ratepill .rate,.ratepill .bank,.ratepill .meta{padding-right:78px}}
+.gocalc{margin-top:10px;font-size:13px;font-weight:800}
+.ratepill .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* MOBİL: kartlar alt alta dizilir, "Hemen Hesapla" tam genişlik */
+@media(max-width:700px){
+  .ratepill .rate{font-size:38px}
+  .herocta{display:block;text-align:center}
+}
+
+/* LAYOUT */
+main{padding:30px 0 60px}
+.grid{display:grid;grid-template-columns:420px 1fr;gap:24px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:clamp(18px,3vw,26px)}
+.card h2{font-size:18px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card h2 .badge{font-family:'Manrope';font-size:12px;font-weight:700;background:#E7F9F1;color:var(--amber-d);border-radius:99px;padding:4px 12px}
+
+/* FORM — BÜYÜK FONTLAR */
+.field{margin-bottom:22px}
+.field label{display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:var(--gray);margin-bottom:8px}
+.field input[type=number]{width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:12px;font:800 clamp(20px,4vw,26px) 'Sora';color:var(--navy);background:var(--soft)}
+.field input[type=number]:focus{outline:none;border-color:var(--amber);background:#fff}
+input[type=range]{width:100%;margin-top:10px;accent-color:var(--amber);height:6px}
+.opts{border-top:1px dashed var(--line);padding-top:14px;font-size:14.5px}
+.opts label{display:flex;align-items:center;gap:9px;padding:6px 0;cursor:pointer;color:var(--ink)}
+.opts input{accent-color:var(--navy);width:17px;height:17px}
+.warn{display:none;background:#FFF1F3;border:1px solid #FECDD3;color:var(--red);border-radius:10px;padding:10px 12px;font-size:13px;margin-top:10px}
+.warn.show{display:block}
+.reset{margin-top:14px;width:100%;padding:12px;border:2px solid var(--line);background:#fff;border-radius:12px;font:700 14px 'Manrope';color:var(--gray);cursor:pointer}
+.reset:hover{border-color:var(--amber);color:var(--amber-d)}
+
+/* SONUÇLAR — BÜYÜK KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px}
+@media(max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--soft);border-radius:14px;padding:16px 18px}
+.kpi .l{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.06em}
+.kpi .v{font-family:'Sora';font-size:clamp(20px,3.4vw,28px);font-weight:800;margin-top:5px;word-break:break-word}
+.kpi.hero{background:var(--navy);color:#fff;grid-column:span 2}
+@media(min-width:561px){.kpi.hero{grid-column:auto}}
+.kpi.hero .l{color:#BFD3FF}
+.kpi.hero .v{color:#fff;font-size:clamp(24px,4vw,32px)}
+
+.viz{display:grid;grid-template-columns:180px 1fr;gap:22px;align-items:center;margin-bottom:8px}
+@media(max-width:600px){.viz{grid-template-columns:1fr;justify-items:center}}
+.legend{font-size:14px;width:100%}
+.legend div{display:flex;align-items:center;gap:9px;padding:5px 0}
+.dot{width:12px;height:12px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* TABLOLAR — yatay kaydırma ile mobil uyum */
+.tblscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--gray);text-align:right;padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.best td{background:#ECFDF5;font-weight:700}
+.tag{font-size:10px;background:var(--amber);color:#fff;border-radius:99px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+
+.tbl-actions{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.btn{padding:11px 18px;border-radius:10px;border:none;font:700 14px 'Manrope';cursor:pointer}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy-2)}
+.btn.ghost{background:#fff;border:2px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--amber)}
+#planwrap{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:12px}
+#planwrap thead th{position:sticky;top:0;background:#fff;z-index:1}
+.foot-note{font-size:12.5px;color:var(--gray);margin-top:14px}
+.faq h3{font-size:15.5px;color:var(--navy);margin:14px 0 5px;font-family:'Sora'}
+.faq p{font-size:14.5px;color:#3A4A63}
+.poplinks{display:flex;flex-wrap:wrap;gap:8px}
+.poplinks a{font-size:13px;color:var(--navy);background:var(--soft);border:1px solid var(--line);border-radius:99px;padding:7px 14px;text-decoration:none;font-weight:600}
+.poplinks a:hover{border-color:var(--amber);color:var(--amber-d)}
+footer{background:var(--soft);border-top:1px solid var(--line);color:var(--gray);padding:24px 0;font-size:13px;text-align:center}
+footer a{color:var(--navy);font-weight:700}
+@media print{header .ratebar,.tbl-actions,.reset,footer{display:none}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <h1>kredi<span>oran</span>.com</h1>
+      <p>Kredi hesaplama: ihtiyaç, taşıt ve konut kredisi taksitini saniyeler içinde, vergiler dahil hesaplayın</p>
+    </div>
+    <div style="margin-top:8px;font-size:12.5px;color:var(--gray)">📅 Son güncelleme: <b>12 Haziran 2026</b> · Oranlar günlük kontrol edilir</div>
+    <a href="#hesaplayici" class="herocta">🧮 Hemen Hesapla</a>
+    <div class="ratebar" id="ratebar"></div>
+    <div class="src">★ En düşük oranlar <a href="https://www.hangikredi.com" target="_blank" rel="noopener">HangiKredi.com</a> değerlendirmelerinden alınmıştır (son kontrol: 12 Haziran 2026). Bir karta tıklayarak hesaplayıcıyı o bankanın koşullarıyla başlatın.</div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap grid">
+
+    <!-- SOL: GİRİŞ -->
+    <div class="card" id="hesaplayici">
+      <h2 id="formTitle">🧮 Kredi Hesaplayıcı <span class="badge" id="formBadge"></span></h2>
+
+      <div class="field">
+        <label>Kredi Tutarı (TL)</label>
+        <input type="number" id="amount" min="1000" step="1000" inputmode="numeric">
+        <input type="range" id="amountR" min="10000" max="10000000" step="10000">
+      </div>
+
+      <div class="field">
+        <label>Aylık Faiz Oranı (%)</label>
+        <input type="number" id="rate" min="0" step="0.01" inputmode="decimal">
+        <input type="range" id="rateR" min="0.5" max="6" step="0.01">
+      </div>
+
+      <div class="field">
+        <label>Vade (Ay)</label>
+        <input type="number" id="term" min="3" max="360" step="1" inputmode="numeric">
+        <input type="range" id="termR" min="3" max="360" step="1">
+      </div>
+
+      <div class="opts">
+        <label><input type="checkbox" id="taxChk" checked> KKDF (%15) + BSMV (%15) dahil et <span id="taxNote" style="color:var(--gray)"></span></label>
+        <label><input type="checkbox" id="feeChk" checked> Dosya/tahsis masrafı ekle (tutarın ‰5'i)</label>
+      </div>
+
+      <div class="warn" id="bddkWarn"></div>
+      <button class="reset" id="resetBtn">↺ Seçili bankanın koşullarına dön</button>
+    </div>
+
+    <!-- SAĞ: SONUÇLAR -->
+    <div style="display:flex;flex-direction:column;gap:24px;min-width:0">
+
+      <div class="card">
+        <h2>Hesaplama Sonucu</h2>
+        <div class="kpis">
+          <div class="kpi hero"><div class="l">Aylık Taksit</div><div class="v" id="kMonthly">—</div></div>
+          <div class="kpi"><div class="l">Toplam Geri Ödeme</div><div class="v" id="kTotal">—</div></div>
+          <div class="kpi"><div class="l">Toplam Faiz + Vergi</div><div class="v" id="kCost" style="color:var(--red)">—</div></div>
+          <div class="kpi"><div class="l">Yıllık Maliyet Oranı*</div><div class="v" id="kApr">—</div></div>
+        </div>
+
+        <div class="viz">
+          <svg id="donut" width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="Maliyet dağılımı"></svg>
+          <div class="legend" id="legend"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Vade Karşılaştırma <span class="badge">aynı tutar &amp; faiz</span></h2>
+        <div class="tblscroll">
+        <table id="cmpTbl"><thead>
+          <tr><th>Vade</th><th>Aylık Taksit</th><th>Toplam Ödeme</th><th>Toplam Maliyet</th></tr>
+        </thead><tbody></tbody></table>
+        </div>
+        <div class="foot-note">İhtiyaç kredilerinde BDDK vade sınırları otomatik kontrol edilir: 125.000 TL altı → 36 ay, 125–250 bin TL → 24 ay, 250 bin TL üzeri → 12 ay.</div>
+      </div>
+
+      <div class="card">
+        <h2>Ödeme Planı (Amortisman)</h2>
+        <div class="tbl-actions">
+          <button class="btn primary" id="csvBtn">⬇ CSV İndir</button>
+          <button class="btn ghost" onclick="window.print()">🖨 Yazdır</button>
+        </div>
+        <div id="planwrap" class="tblscroll">
+          <table id="planTbl"><thead>
+            <tr><th>Ay</th><th>Taksit</th><th>Anapara</th><th>Faiz</th><th>Vergi</th><th>Kalan Anapara</th></tr>
+          </thead><tbody></tbody></table>
+        </div>
+        <div class="foot-note">* Yıllık maliyet oranı; faiz, vergiler ve dosya masrafını içeren yaklaşık efektif yıllık orandır. Sonuçlar bilgilendirme amaçlıdır; kesin koşullar için bankanıza danışın.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- POPÜLER HESAPLAMALAR (programmatic SEO iç linkler) -->
+  <div class="wrap" style="margin-top:30px">
+    <div class="card">
+      <h2>Popüler Hesaplamalar</h2>
+      <div class="poplinks" id="poplinks"></div>
+    </div>
+  </div>
+
+  <!-- SSS (FAQPage schema ile eşleşir) -->
+  <div class="wrap" style="margin-top:24px">
+    <div class="card faq">
+      <h2>Sık Sorulan Sorular</h2>
+      <h3>Kredi faizi nasıl hesaplanır?</h3>
+      <p>Her taksit döneminde kalan anaparaya aylık faiz oranı uygulanır; ihtiyaç ve taşıt kredilerinde faizin üzerine %15 KKDF ve %15 BSMV eklenir. Aylık taksit, eşit taksitli anüite formülüyle hesaplanır.</p>
+      <h3>KKDF ve BSMV nedir, krediye nasıl yansır?</h3>
+      <p>İhtiyaç ve taşıt kredilerinde ödenen faizin her biri %15'i kadar alınan vergilerdir; faiz maliyetinizi fiilen %30 artırırlar. Konut kredileri bu vergilerden muaftır — hesaplayıcımız bunu otomatik uygular.</p>
+      <h3>En düşük faizli kredi hangi bankada?</h3>
+      <p>Güncel değerlendirmelere göre ihtiyaç kredisinde DenizBank (%2,89), taşıt kredisinde Garanti BBVA (%2,85), konut kredisinde Ziraat Bankası (~%3,5) öne çıkıyor. Yukarıdaki kartlardan tek tıkla bu koşullarla hesaplama yapabilirsiniz.</p>
+      <h3>Aylık taksitin yanında başka hangi maliyetler var?</h3>
+      <p>Dosya/tahsis masrafı (azami kredi tutarının ‰5'i), konut ve taşıtta sigorta ile ekspertiz/ipotek ücretleri eklenebilir. Hesaplayıcıda dosya masrafını açıp kapatarak etkisini görebilirsiniz.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">© 2025 kredioran.com — Oran kaynağı: <a href="https://www.hangikredi.com" target="_blank" rel="noopener">HangiKredi.com</a>. Bu site finansal danışmanlık vermez.</div>
+</footer>
+
+<script>
+/* ===== VERİ — hangikredi.com en düşük oranlar ===== */
+const DATA = {
+  ihtiyac: {name:'İhtiyaç Kredisi', icon:'💰', bank:'DenizBank',     rate:2.89, amount:10000,  term:36,  tax:true,  maxTerm:36,  maxAmt:10000000, c:'#2563EB', cs:'#EAF1FF'},
+  konut:   {name:'Konut Kredisi',   icon:'🏠', bank:'Ziraat Bankası',rate:3.5, amount:500000, term:120, tax:false, maxTerm:360, maxAmt:20000000, c:'#10B981', cs:'#E7F9F1'},
+  tasit:   {name:'Taşıt Kredisi',   icon:'🚗', bank:'Garanti BBVA',  rate:2.85, amount:200000, term:48,  tax:true,  maxTerm:60,  maxAmt:5000000,  c:'#8B5CF6', cs:'#F1EAFF'}
+};
+let type = 'ihtiyac';
+
+const $ = id => document.getElementById(id);
+const fmt  = v => new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:2}).format(v);
+const fmt0 = v => new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(v);
+
+/* ===== ÜST ORAN PANELİ — BÜYÜK KARTLAR ===== */
+function buildRatebar(){
+  $('ratebar').innerHTML = Object.entries(DATA).map(([k,d])=>{
+    const ex = schedule(d.amount, d.rate, d.term, d.tax);   // örnek taksit (vergiler dahil)
+    return `
+    <div class="ratepill ${k===type?'active':''}" data-k="${k}" role="button" tabindex="0" style="border-top:5px solid ${d.c}">
+      <div class="bigicon" style="background:${d.cs}">${d.icon}</div>
+      <div class="t"><span class="chip" style="background:${d.cs};color:${d.c}">${d.name}</span> en düşük faiz</div>
+      <div class="rate" style="color:${d.c}"><small style="color:${d.c}">%</small>${d.rate.toFixed(2)}</div>
+      <div class="bank">${d.bank}</div>
+      <div class="meta">${d.term} ay vade · ${fmt0(d.amount)} TL örnek tutar</div>
+      <div class="example"><span>Örnek aylık taksit</span><b>${fmt(ex.pay)}</b></div>
+      <div class="gocalc" style="color:${d.c}">Bu koşullarla hesapla ↓</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.ratepill').forEach(p=>{
+    p.onclick=()=>selectType(p.dataset.k,true);
+    p.onkeydown=e=>{if(e.key==='Enter'||e.key===' ')selectType(p.dataset.k,true)};
+  });
+}
+
+/* ===== TİP SEÇİMİ / DEFAULTLAR ===== */
+function selectType(k, scroll=false){
+  type = k;
+  const d = DATA[k];
+  buildRatebar();
+  $('formBadge').textContent = d.name;
+  $('formBadge').style.background = d.cs;
+  $('formBadge').style.color = d.c;
+  $('amount').value = d.amount;  $('amountR').max = d.maxAmt; $('amountR').value = d.amount;
+  $('rate').value = d.rate;      $('rateR').value = d.rate;
+  $('term').value = d.term;      $('termR').max = d.maxTerm;  $('termR').value = d.term;
+  $('taxChk').checked = d.tax;
+  $('taxNote').textContent = d.tax ? '' : '— konut kredisi vergiden muaftır';
+  calc();
+  if(scroll) $('hesaplayici').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('resetBtn').onclick = ()=>selectType(type);
+
+/* ===== INPUT ↔ SLIDER SENKRON ===== */
+[['amount','amountR'],['rate','rateR'],['term','termR']].forEach(([a,b])=>{
+  $(a).addEventListener('input',()=>{ $(b).value=$(a).value; calc(); });
+  $(b).addEventListener('input',()=>{ $(a).value=$(b).value; calc(); });
+});
+['taxChk','feeChk'].forEach(id=>$(id).addEventListener('change',calc));
+
+/* ===== BDDK VADE KONTROLÜ (ihtiyaç) ===== */
+function bddkCheck(P,n){
+  if(type!=='ihtiyac') return null;
+  let lim = P<125000?36 : P<=250000?24 : 12;
+  return n>lim ? `⚠ BDDK kuralı: ${fmt0(P)} TL ihtiyaç kredisinde azami vade ${lim} aydır. Girilen ${n} ay bu sınırı aşıyor.` : null;
+}
+
+/* ===== ÇEKİRDEK HESAP ===== */
+function schedule(P, rPct, n, taxed){
+  const tax = taxed ? 0.30 : 0;               // KKDF %15 + BSMV %15 → faiz üzerinden
+  const r = (rPct/100)*(1+tax);               // brüt aylık oran
+  const pay = r===0 ? P/n : P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  let bal=P, rows=[], fSum=0, vSum=0;
+  for(let m=1;m<=n;m++){
+    const grossInt = bal*r;
+    const netInt = taxed ? grossInt/(1+tax) : grossInt;
+    const ver = grossInt-netInt;
+    const prin = pay-grossInt;
+    bal = Math.max(0,bal-prin);
+    fSum+=netInt; vSum+=ver;
+    rows.push({m,pay,prin,netInt,ver,bal});
+  }
+  return {pay, total:pay*n, interest:fSum, vat:vSum, rows};
+}
+
+function calc(){
+  const P = +$('amount').value, rp = +$('rate').value, n = +$('term').value;
+  if(!(P>0&&rp>=0&&n>0)) return;
+  const taxed = $('taxChk').checked;
+  const fee = $('feeChk').checked ? P*0.005 : 0;
+  const s = schedule(P,rp,n,taxed);
+
+  const w = bddkCheck(P,n);
+  $('bddkWarn').classList.toggle('show',!!w);
+  $('bddkWarn').textContent = w||'';
+
+  $('kMonthly').textContent = fmt(s.pay);
+  $('kTotal').textContent   = fmt(s.total+fee);
+  $('kCost').textContent    = fmt(s.interest+s.vat+fee);
+  const grossMonthly=(rp/100)*(taxed?1.3:1);
+  const apr=(Math.pow(1+grossMonthly,12)-1)*100 + (fee/P)*100*(12/n);
+  $('kApr').textContent = '%'+apr.toFixed(2);
+
+  drawDonut(P,s.interest,s.vat,fee);
+  buildCompare(P,rp,taxed,fee,n);
+  buildPlan(s.rows);
+}
+
+/* ===== DONUT (SVG) ===== */
+function drawDonut(P,F,V,M){
+  const parts=[
+    {l:'Anapara',v:P,c:'#2563EB'},
+    {l:'Faiz',v:F,c:'#8B5CF6'},
+    {l:'Vergi (KKDF+BSMV)',v:V,c:'#F43F5E'},
+    {l:'Dosya Masrafı',v:M,c:'#93A6CE'}
+  ].filter(p=>p.v>0.01);
+  const tot=parts.reduce((a,p)=>a+p.v,0), R=74,C=90,circ=2*Math.PI*R;
+  let off=0, svg='';
+  parts.forEach(p=>{
+    const len=p.v/tot*circ;
+    svg+=`<circle cx="${C}" cy="${C}" r="${R}" fill="none" stroke="${p.c}" stroke-width="26"
+      stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${C} ${C})"/>`;
+    off+=len;
+  });
+  svg+=`<text x="${C}" y="${C-4}" text-anchor="middle" font-family="Sora" font-size="14" font-weight="700" fill="#22325E">Toplam</text>
+        <text x="${C}" y="${C+15}" text-anchor="middle" font-family="Manrope" font-size="12" fill="#5C6FA0">${fmt0(tot)} TL</text>`;
+  $('donut').innerHTML=svg;
+  $('legend').innerHTML=parts.map(p=>
+    `<div><span class="dot" style="background:${p.c}"></span>${p.l}<b>${fmt(p.v)}</b></div>`).join('');
+}
+
+/* ===== VADE KARŞILAŞTIRMA ===== */
+function buildCompare(P,rp,taxed,fee,cur){
+  const cands=[...new Set([6,12,24,36,48,60,120,180,240,cur])]
+    .filter(n=>n<=+$('termR').max && (type!=='ihtiyac'||!bddkCheck(P,n)))
+    .sort((a,b)=>a-b).slice(0,7);
+  $('cmpTbl').querySelector('tbody').innerHTML=cands.map(n=>{
+    const s=schedule(P,rp,n,taxed);
+    return `<tr class="${n===cur?'best':''}"><td>${n} ay${n===cur?'<span class="tag">seçili</span>':''}</td>
+      <td>${fmt(s.pay)}</td><td>${fmt(s.total+fee)}</td><td>${fmt(s.interest+s.vat+fee)}</td></tr>`;
+  }).join('');
+}
+
+/* ===== ÖDEME PLANI + CSV ===== */
+let lastRows=[];
+function buildPlan(rows){
+  lastRows=rows;
+  $('planTbl').querySelector('tbody').innerHTML=rows.map(r=>
+    `<tr><td>${r.m}</td><td>${fmt(r.pay)}</td><td>${fmt(r.prin)}</td><td>${fmt(r.netInt)}</td><td>${fmt(r.ver)}</td><td>${fmt(r.bal)}</td></tr>`).join('');
+}
+$('csvBtn').onclick=()=>{
+  const head='Ay;Taksit;Anapara;Faiz;Vergi;Kalan Anapara\n';
+  const body=lastRows.map(r=>[r.m,r.pay,r.prin,r.netInt,r.ver,r.bal].map(v=>typeof v==='number'?v.toFixed(2).replace('.',','):v).join(';')).join('\n');
+  const blob=new Blob(['\ufeff'+head+body],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`kredioran_odeme_plani_${type}.csv`;
+  a.click();
+};
+
+/* ===== POPÜLER HESAPLAMA LİNKLERİ ===== */
+const POPULAR = [
+  ['ihtiyac',100000,36],['ihtiyac',50000,36],['ihtiyac',250000,24],['ihtiyac',500000,12],
+  ['konut',1000000,120],['konut',2000000,120],['konut',3000000,180],['konut',5000000,240],
+  ['tasit',500000,48],['tasit',1000000,48],['tasit',300000,36]
+];
+$('poplinks').innerHTML = POPULAR.map(([k,P,n])=>{
+  const d=DATA[k];
+  return `<a href="hesaplama/${k}-kredisi-${P}-tl-${n}-ay.html">${d.icon} ${fmt0(P)} TL ${d.name} · ${n} ay</a>`;
+}).join('');
+
+/* ===== URL PARAMETRELERİ (landing page → hesaplayıcı) ===== */
+function applyParams(){
+  const q = new URLSearchParams(location.search);
+  const t = q.get('tip');
+  if(t && DATA[t]){
+    selectType(t);
+    if(q.get('tutar')){ $('amount').value=+q.get('tutar'); $('amountR').value=+q.get('tutar'); }
+    if(q.get('vade')) { $('term').value=+q.get('vade');   $('termR').value=+q.get('vade'); }
+    calc();
+    return true;
+  }
+  return false;
+}
+
+/* ===== BAŞLAT ===== */
+buildRatebar();
+if(!applyParams()) selectType('ihtiyac');
+</script>
+</body>
+</html>

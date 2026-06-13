@@ -1,0 +1,45 @@
+name: Günlük Oran Güncelleme
+
+on:
+  schedule:
+    - cron: '0 4 * * *'   # Her gün 04:00 UTC = 07:00 Türkiye
+  workflow_dispatch:        # Elle de tetiklenebilir (Actions sekmesi → Run workflow)
+
+permissions:
+  contents: write
+
+jobs:
+  guncelle-ve-yayinla:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repoyu çek
+        uses: actions/checkout@v4
+
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Bağımlılıklar
+        run: pip install requests
+
+      - name: Oranları hangikredi'den çek
+        run: python update_rates.py
+
+      - name: Siteyi yeniden üret (115 sayfa + index + sitemap)
+        run: python generate_pages.py
+
+      - name: Değişiklikleri repoya işle
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Otomatik oran güncellemesi"
+
+      - name: Kriweb'e FTP ile yükle
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./site/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          dangerous-clean-slate: false

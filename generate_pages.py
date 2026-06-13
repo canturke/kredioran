@@ -139,6 +139,13 @@ def page(tkey, t, P, n):
 <link rel="canonical" href="{DOMAIN}/hesaplama/{slug}">
 <meta property="og:title" content="{title}"><meta property="og:description" content="{desc}">
 <meta property="og:type" content="website"><meta property="og:url" content="{DOMAIN}/hesaplama/{slug}">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta name="theme-color" content="#2563EB">
+<meta property="og:image" content="https://kredioran.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;800&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
 <script type="application/ld+json">{{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{faq_ld}]}}</script>
 <script type="application/ld+json">{{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[

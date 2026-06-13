@@ -2,8 +2,10 @@ name: Günlük Oran Güncelleme
 
 on:
   schedule:
+    - cron: '0 5 * * *'    # Her gün 05:00 UTC = 08:00 Türkiye
     - cron: '0 8 * * *'    # Her gün 08:00 UTC = 11:00 Türkiye
     - cron: '0 12 * * *'   # Her gün 12:00 UTC = 15:00 Türkiye
+    - cron: '0 15 * * *'   # Her gün 15:00 UTC = 18:00 Türkiye
   workflow_dispatch:        # Elle de tetiklenebilir (Actions sekmesi → Run workflow)
 
 permissions:

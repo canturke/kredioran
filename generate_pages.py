@@ -5,13 +5,14 @@ Tutar x Vade x Kredi Türü kombinasyonları için statik landing page + sitemap
 Kullanım: python3 generate_pages.py
 """
 import os, json, re
-from datetime import date
+from datetime import datetime, timezone, timedelta
 
 AYLAR = ["", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
          "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"]
-_t = date.today()
-TODAY = f"{_t.day} {AYLAR[_t.month]} {_t.year}"
-ISO = _t.isoformat()
+# Türkiye saati (UTC+3, yıl boyu sabit)
+_t = datetime.now(timezone(timedelta(hours=3)))
+TODAY = f"{_t.day} {AYLAR[_t.month]} {_t.year}, {_t:%H:%M}"
+ISO = _t.date().isoformat()
 
 DOMAIN = "https://kredioran.com"
 OUT = "site/hesaplama"

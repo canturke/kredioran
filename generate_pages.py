@@ -36,7 +36,7 @@ TYPES = {
 def bddk_max(amount):  # ihtiyaç kredisi BDDK vade sınırı
     return 36 if amount < 125_000 else (24 if amount <= 250_000 else 12)
 
-def fmt(v):  return f"{v:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") + " TL"
+def fmt(v):  return f"{v:,.0f}".replace(",", ".") + " TL"
 def fmt0(v): return f"{v:,.0f}".replace(",", ".")
 
 def annuity(P, rate_pct, n, taxed):

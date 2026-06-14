@@ -17,6 +17,19 @@ ISO = _t.date().isoformat()
 DOMAIN = "https://kredioran.com"
 OUT = "site/hesaplama"
 
+# Google Ads etiketi (gtag.js) — her sayfanın <head>'ine eklenir (dönüşüm ölçümü)
+GADS_ID = "AW-18239372932"
+GTAG = (
+    '\n<!-- Google tag (gtag.js) -->\n'
+    f'<script async src="https://www.googletagmanager.com/gtag/js?id={GADS_ID}"></script>\n'
+    '<script>\n'
+    '  window.dataLayer = window.dataLayer || [];\n'
+    '  function gtag(){dataLayer.push(arguments);}\n'
+    "  gtag('js', new Date());\n"
+    f"  gtag('config', '{GADS_ID}');\n"
+    '</script>\n'
+)
+
 with open("rates.json", encoding="utf-8") as _f:
     RATES = json.load(_f)
 
@@ -132,7 +145,7 @@ def page(tkey, t, P, n):
         '{"@type":"Question","name":"%s","acceptedAnswer":{"@type":"Answer","text":"%s"}}' % (q.replace('"', "'"), a.replace('"', "'"))
         for q, a in faq_items)
 
-    html = f"""<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8">
+    html = f"""<!DOCTYPE html><html lang="tr"><head>{GTAG}<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>{title}</title>
 <meta name="description" content="{desc}">
@@ -189,6 +202,10 @@ def patch_index():
     """site/index.html içindeki oranları, bankaları ve tarihleri rates.json ile senkronlar."""
     path = "site/index.html"
     s = open(path, encoding="utf-8").read()
+
+    # Google Ads etiketini <head>'den hemen sonra ekle (yoksa) — dönüşüm ölçümü
+    if GADS_ID not in s:
+        s = s.replace("<head>", "<head>" + GTAG, 1)
 
     for k in ("ihtiyac", "tasit", "konut"):
         r = RATES[k]

@@ -5,7 +5,9 @@ Sayfa yapısı değişir veya istek başarısız olursa ESKİ ORAN KORUNUR (site
 """
 import html as htmllib
 import json, re, sys
-from datetime import date
+from datetime import datetime, timezone, timedelta
+
+TR = timezone(timedelta(hours=3))  # Türkiye saati (yıl boyu sabit)
 
 import requests
 
@@ -55,31 +57,49 @@ def main():
     with open("rates.json", encoding="utf-8") as f:
         rates = json.load(f)
 
+    now = datetime.now(TR)
     changed = False
+    parse_failed = []   # sayfa yapısı değiştiyse (sessiz donma riski) — workflow'u kırmızıya çeker
     for key, url in PAGES.items():
         try:
             html = requests.get(url, headers=HEADERS, timeout=30).text
-            new = parse(html)
-            if new is None:
-                print(f"[UYARI] {key}: cümle bulunamadı/parse edilemedi — eski oran korunuyor "
-                      f"(%{rates[key]['rate']} {rates[key]['bank']})")
-                continue
-            if new != rates[key]:
-                print(f"[GÜNCELLENDİ] {key}: %{rates[key]['rate']} {rates[key]['bank']} → "
-                      f"%{new['rate']} {new['bank']} ({new['term']} ay, {new['amount']} TL)")
-                rates[key] = new
-                changed = True
-            else:
-                print(f"[AYNI] {key}: %{new['rate']} {new['bank']}")
         except Exception as e:
-            print(f"[HATA] {key}: {e} — eski oran korunuyor")
+            # Ağ/zaman aşımı: geçici olabilir, sert hata verme — eski oran korunur
+            print(f"[AĞ HATASI] {key}: {e} — eski oran korunuyor (geçici olabilir)")
+            continue
 
-    rates["updated"] = date.today().isoformat()
+        new = parse(html)
+        if new is None:
+            parse_failed.append(key)
+            print(f"[PARSE HATASI] {key}: beklenen cümle bulunamadı — hangikredi sayfa yapısı "
+                  f"değişmiş olabilir. Eski oran korunuyor (%{rates[key]['rate']} {rates[key]['bank']}).")
+            continue
+
+        cur = {k: rates[key].get(k) for k in ("bank", "rate", "amount", "term")}
+        if new != cur:
+            print(f"[GÜNCELLENDİ] {key}: %{cur['rate']} {cur['bank']} → "
+                  f"%{new['rate']} {new['bank']} ({new['term']} ay, {new['amount']} TL)")
+            rates[key] = new
+            changed = True
+        else:
+            print(f"[AYNI] {key}: %{new['rate']} {new['bank']}")
+
+    # 'checked' = her kontrol anı (her zaman ilerler); 'updated' = yalnızca oran gerçekten değişince
+    rates["checked"] = now.date().isoformat()
+    if changed or "T" not in str(rates.get("updated", "")):  # değişti ya da eski tarih biçimini taşı
+        rates["updated"] = now.isoformat(timespec="minutes")
+
     with open("rates.json", "w", encoding="utf-8") as f:
         json.dump(rates, f, ensure_ascii=False, indent=2)
 
-    # Çıkış kodu 0 her durumda — pipeline tarihi tazeleyip siteyi yeniden üretir
     print("changed" if changed else "no-change")
+
+    # Parse başarısızlığı = sayfa yapısı değişti = ciddi. Görünür olması için hata ver (kırmızı).
+    if parse_failed:
+        print(f"::error::Oran parse edilemedi: {', '.join(parse_failed)}. "
+              f"hangikredi.com sayfa yapısı değişmiş olabilir; update_rates.py'deki PATTERN "
+              f"güncellenmeli. Eski oranlar korundu, site yayınlanmadı.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

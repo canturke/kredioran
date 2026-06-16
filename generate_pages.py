@@ -33,6 +33,21 @@ GTAG = (
 with open("rates.json", encoding="utf-8") as _f:
     RATES = json.load(_f)
 
+
+def _tr_fmt(iso, with_time=True):
+    """rates.json'daki ISO tarihi '16 Haziran 2026, 10:55' biçimine çevirir."""
+    try:
+        d = datetime.fromisoformat(str(iso))
+    except (ValueError, TypeError):
+        return None
+    s = f"{d.day} {AYLAR[d.month]} {d.year}"
+    return s + (f", {d:%H:%M}" if with_time else "")
+
+
+# UPDATED: oranların gerçekten en son değiştiği an · CHECKED: en son kontrol günü
+UPDATED = _tr_fmt(RATES.get("updated"), with_time=True) or TODAY
+CHECKED = _tr_fmt(RATES.get("checked"), with_time=False) or TODAY
+
 # hangikredi.com en düşük oranlar (güncellenecek tek yer)
 TYPES = {
     "ihtiyac": {"name": "İhtiyaç Kredisi", "icon": "💰", **RATES["ihtiyac"], "tax": True,
@@ -98,7 +113,7 @@ def page(tkey, t, P, n):
     cost = total - P
     rows = schedule_rows(P, t["rate"], n, t["tax"])
     slug = f"{tkey}-kredisi-{P}-tl-{n}-ay.html"
-    title = f"{fmt0(P)} TL {t['name']} Hesaplama — {n} Ay Vade Taksiti ({TODAY})"
+    title = f"{fmt0(P)} TL {t['name']} Hesaplama — {n} Ay Vade Taksiti ({UPDATED})"
     desc = (f"{fmt0(P)} TL {t['name'].lower()} {n} ay vadede aylık taksiti {fmt(pay)}. "
             f"En düşük faiz %{t['rate']:.2f} ({t['bank']}). Toplam geri ödeme ve ödeme planını saniyeler içinde görün.")
     h1 = f"{fmt0(P)} TL {t['name']} — {n} Ay Vade Taksit Hesaplama"
@@ -138,7 +153,7 @@ def page(tkey, t, P, n):
         (f"{fmt0(P)} TL kredinin toplam maliyeti nedir?",
          f"{n} ay vadede toplam faiz ve vergi yükü yaklaşık {fmt(cost)} olur; anaparayla birlikte {fmt(total)} geri ödersiniz."),
         ("Bu oranlar güncel mi?",
-         f"Oranlar HangiKredi.com'da yayımlanan en düşük banka tekliflerinden alınmıştır. Son kontrol: {TODAY}. Bankaların güncel oranları değişiklik gösterebilir."),
+         f"Oranlar HangiKredi.com'da yayımlanan en düşük banka tekliflerinden alınmıştır. Oranların en son güncellendiği tarih: {UPDATED}; son kontrol: {CHECKED}. Bankaların güncel oranları değişiklik gösterebilir."),
     ]
     faq_html = "".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in faq_items)
     faq_ld = ",".join(
@@ -168,7 +183,7 @@ def page(tkey, t, P, n):
 <style>{CSS}</style></head><body>
 <header><div class="wrap"><a class="brand" href="../index.html">kredi<span>oran</span>.com</a>
 <h1>{t['icon']} {h1}</h1>
-<div class="upd">Son güncelleme: {TODAY} · En düşük oran kaynağı: HangiKredi.com</div></div></header>
+<div class="upd">Son güncelleme: {UPDATED} · Son kontrol: {CHECKED} · Kaynak: HangiKredi.com</div></div></header>
 <main class="wrap">
 <div class="hero">
   <div><div class="l">Aylık Taksit</div><div class="v am">{fmt(pay)}</div></div>
@@ -219,11 +234,11 @@ def patch_index():
             return line
         s = re.sub(rf"^\s*{k}:\s*\{{.*$", sub_line, s, count=1, flags=re.M)
 
-    # Görünen tarih
-    s = re.sub(r"(Son güncelleme: <b>)[^<]*(</b>)", rf"\g<1>{TODAY}\g<2>", s)
+    # Görünen tarih: "Son güncelleme" = oran en son değişimi, "son kontrol" = bugünkü kontrol
+    s = re.sub(r"(Son güncelleme: <b>)[^<]*(</b>)", rf"\g<1>{UPDATED}\g<2>", s)
     # Oran kaynağı satırındaki dönem bilgisi
     s = re.sub(r"değerlendirmelerinden alınmıştır \([^)]*\)",
-               f"değerlendirmelerinden alınmıştır (son kontrol: {TODAY})", s)
+               f"değerlendirmelerinden alınmıştır (son kontrol: {CHECKED})", s)
     # FAQ + JSON-LD içindeki banka/oran cümlesi (iki yerde geçer)
     faq = (f"ihtiyaç kredisinde {RATES['ihtiyac']['bank']} (%{str(RATES['ihtiyac']['rate']).replace('.', ',')}), "
            f"taşıt kredisinde {RATES['tasit']['bank']} (%{str(RATES['tasit']['rate']).replace('.', ',')}), "

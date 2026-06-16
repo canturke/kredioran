@@ -84,8 +84,8 @@ def main():
         else:
             print(f"[AYNI] {key}: %{new['rate']} {new['bank']}")
 
-    # 'checked' = her kontrol anı (her zaman ilerler); 'updated' = yalnızca oran gerçekten değişince
-    rates["checked"] = now.date().isoformat()
+    # 'checked' = her kontrol anı (tarih+saat, her zaman ilerler); 'updated' = yalnızca oran değişince
+    rates["checked"] = now.isoformat(timespec="minutes")
     if changed or "T" not in str(rates.get("updated", "")):  # değişti ya da eski tarih biçimini taşı
         rates["updated"] = now.isoformat(timespec="minutes")
 

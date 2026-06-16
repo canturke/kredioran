@@ -3,6 +3,7 @@
 update_rates.py — hangikredi.com'dan en düşük oranları çekip rates.json'ı günceller.
 Sayfa yapısı değişir veya istek başarısız olursa ESKİ ORAN KORUNUR (site asla bozulmaz).
 """
+import html as htmllib
 import json, re, sys
 from datetime import date
 
@@ -14,25 +15,36 @@ PAGES = {
     "konut":   "https://www.hangikredi.com/kredi/konut-kredisi",
 }
 
-# Örnek cümle: "... 36 ay vadeli 10.000 TL İhtiyaç Kredisi için en avantajlı
-#               teklifi sunan banka %2,89 Faiz oranı ile DenizBank oldu."
+# hangikredi cümlesi (tag/HTML-yorumları temizlendikten sonra), ör:
+#   "... 36 ay vadeli 10.000 TL İhtiyaç Kredisi için en avantajlı teklifi sunan
+#    banka %2,99 Faiz oranı ile ING,DenizBank oldu."
+# Katılım bankalarında "Faiz oranı" yerine "Kâr Payı oranı" yazar.
 PATTERN = re.compile(
-    r"(\d+)\s*ay\s*vadeli\s*([\d\.]+)\s*TL[^%]{0,120}?"
-    r"en avantajl[ıi] teklifi sunan banka\s*%\s*([\d,\.]+)\s*[Ff]aiz oran[ıi] ile\s*([^.<]{2,40}?)\s*oldu",
+    r"(\d+)\s*ay\s*vadeli\s*([\d.]+)\s*TL[^%]{0,80}?"
+    r"en avantajl[ıi] teklifi sunan banka\s*%\s*([\d,.]+)\s*"
+    r"(?:Faiz|K[âa]r\s*Pay[ıi])\s*oran[ıi]\s*ile\s*([^.]{2,60}?)\s*oldu",
     re.S,
 )
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; KrediOranBot/1.0; +https://kredioran.com)"}
 
 
+def clean(raw: str) -> str:
+    """HTML entity'lerini çöz, yorum ve etiketleri at, boşlukları sadeleştir."""
+    t = htmllib.unescape(raw)
+    t = re.sub(r"<!--.*?-->", "", t, flags=re.S)
+    t = re.sub(r"<[^>]+>", " ", t)
+    return re.sub(r"\s+", " ", t)
+
+
 def parse(html: str):
-    m = PATTERN.search(html)
+    m = PATTERN.search(clean(html))
     if not m:
         return None
     term = int(m.group(1))
     amount = int(m.group(2).replace(".", ""))
     rate = float(m.group(3).replace(",", "."))
-    bank = re.sub(r"\s+", " ", m.group(4)).strip()
+    bank = re.sub(r"\s*,\s*", ", ", m.group(4).strip())
     # Mantık kontrolleri — saçma değer geldiyse reddet
     if not (0.1 <= rate <= 15 and 3 <= term <= 360 and 1_000 <= amount <= 50_000_000 and 2 <= len(bank) <= 40):
         return None

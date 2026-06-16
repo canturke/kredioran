@@ -1,20 +1,20 @@
 {
-  "updated": "2026-06-15",
+  "updated": "2026-06-16",
   "ihtiyac": {
-    "bank": "DenizBank",
-    "rate": 2.89,
+    "bank": "ING, DenizBank",
+    "rate": 2.99,
     "amount": 10000,
     "term": 36
   },
   "tasit": {
-    "bank": "Garanti BBVA",
-    "rate": 2.85,
+    "bank": "Vakıf Katılım",
+    "rate": 3.11,
     "amount": 200000,
     "term": 48
   },
   "konut": {
-    "bank": "Ziraat Bankası",
-    "rate": 3.5,
+    "bank": "Vakıf Katılım",
+    "rate": 2.63,
     "amount": 500000,
     "term": 120
   }

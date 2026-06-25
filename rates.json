@@ -1,22 +1,22 @@
 {
-  "updated": "2026-06-23T14:19+03:00",
+  "updated": "2026-06-25T11:21+03:00",
   "ihtiyac": {
-    "bank": "ING, DenizBank, Odea",
+    "bank": "DenizBank, Odea, ING",
     "rate": 2.99,
     "amount": 10000,
     "term": 36
   },
   "tasit": {
     "bank": "Vakıf Katılım",
-    "rate": 3.14,
+    "rate": 3.09,
     "amount": 200000,
     "term": 48
   },
   "konut": {
     "bank": "Vakıf Katılım",
-    "rate": 2.73,
+    "rate": 2.69,
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-06-24T19:59+03:00"
+  "checked": "2026-06-25T11:21+03:00"
 }

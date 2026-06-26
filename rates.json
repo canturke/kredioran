@@ -1,7 +1,7 @@
 {
-  "updated": "2026-06-25T11:21+03:00",
+  "updated": "2026-06-26T11:28+03:00",
   "ihtiyac": {
-    "bank": "DenizBank, Odea, ING",
+    "bank": "Odea, ING, getirfinans, DenizBank",
     "rate": 2.99,
     "amount": 10000,
     "term": 36
@@ -18,5 +18,5 @@
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-06-25T20:03+03:00"
+  "checked": "2026-06-26T11:28+03:00"
 }

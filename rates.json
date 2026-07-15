@@ -1,8 +1,8 @@
 {
-  "updated": "2026-07-08T17:13+03:00",
+  "updated": "2026-07-15T10:13+03:00",
   "ihtiyac": {
-    "bank": "ING, DenizBank",
-    "rate": 2.99,
+    "bank": "getirfinans",
+    "rate": 2.89,
     "amount": 10000,
     "term": 36
   },
@@ -18,5 +18,5 @@
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-07-14T19:08+03:00"
+  "checked": "2026-07-15T10:13+03:00"
 }

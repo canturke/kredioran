@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-28T13:37+03:00",
+  "updated": "2026-07-31T17:09+03:00",
   "ihtiyac": {
     "bank": "DenizBank, ING",
     "rate": 2.99,
@@ -13,10 +13,10 @@
     "term": 48
   },
   "konut": {
-    "bank": "Vakıf Katılım",
-    "rate": 2.69,
+    "bank": "Albaraka Türk",
+    "rate": 2.79,
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-07-31T13:40+03:00"
+  "checked": "2026-07-31T17:09+03:00"
 }

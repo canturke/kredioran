@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-11T16:07+03:00",
+  "updated": "2026-08-17T15:46+03:00",
   "ihtiyac": {
     "bank": "ING, DenizBank",
     "rate": 2.99,
@@ -13,10 +13,10 @@
     "term": 48
   },
   "konut": {
-    "bank": "Kuveyt Türk, Albaraka Türk",
+    "bank": "Albaraka Türk, Kuveyt Türk",
     "rate": 2.87,
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-08-17T11:45+03:00"
+  "checked": "2026-08-17T15:46+03:00"
 }

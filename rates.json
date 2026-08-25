@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-21T15:49+03:00",
+  "updated": "2026-08-25T11:43+03:00",
   "ihtiyac": {
     "bank": "DenizBank",
     "rate": 2.99,
@@ -7,16 +7,16 @@
     "term": 36
   },
   "tasit": {
-    "bank": "Vakıf Katılım",
-    "rate": 3.14,
+    "bank": "Vakıf Katılım, Albaraka Türk",
+    "rate": 3.19,
     "amount": 200000,
     "term": 48
   },
   "konut": {
-    "bank": "Albaraka Türk, Kuveyt Türk",
+    "bank": "Kuveyt Türk, Albaraka Türk",
     "rate": 2.87,
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-08-25T08:27+03:00"
+  "checked": "2026-08-25T11:43+03:00"
 }

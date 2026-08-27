@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-25T15:49+03:00",
+  "updated": "2026-08-27T19:04+03:00",
   "ihtiyac": {
     "bank": "DenizBank",
     "rate": 2.99,
@@ -7,7 +7,7 @@
     "term": 36
   },
   "tasit": {
-    "bank": "Albaraka Türk, Vakıf Katılım",
+    "bank": "Vakıf Katılım, Albaraka Türk",
     "rate": 3.19,
     "amount": 200000,
     "term": 48
@@ -18,5 +18,5 @@
     "amount": 500000,
     "term": 120
   },
-  "checked": "2026-08-26T19:10+03:00"
+  "checked": "2026-08-27T19:04+03:00"
 }

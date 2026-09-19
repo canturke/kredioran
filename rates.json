@@ -4,19 +4,25 @@
     "bank": "DenizBank",
     "rate": 2.99,
     "amount": 10000,
-    "term": 36
+    "term": 36,
+    "updated": "2026-08-27T19:04+03:00",
+    "checked": "2026-09-19T15:19+03:00"
   },
   "tasit": {
     "bank": "Vakıf Katılım, Albaraka Türk",
     "rate": 3.19,
     "amount": 200000,
-    "term": 48
+    "term": 48,
+    "updated": "2026-08-27T19:04+03:00",
+    "checked": "2026-09-19T15:19+03:00"
   },
   "konut": {
     "bank": "Kuveyt Türk, Albaraka Türk",
     "rate": 2.87,
     "amount": 500000,
-    "term": 120
+    "term": 120,
+    "updated": "2026-08-27T19:04+03:00",
+    "checked": "2026-09-19T15:19+03:00"
   },
-  "checked": "2026-08-31T23:29+03:00"
+  "checked": "2026-09-19T15:19+03:00"
 }

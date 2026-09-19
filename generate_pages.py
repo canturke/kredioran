@@ -108,11 +108,12 @@ footer{background:#F4F8FF;border-top:1px solid #DCE7FB;color:#5C6FA0;padding:22p
 footer a{color:#2563EB}"""
 
 def page(tkey, t, P, n):
+    checked = _tr_fmt(t.get("checked"), with_time=True) or CHECKED
     pay, total = annuity(P, t["rate"], n, t["tax"])
     cost = total - P
     rows = schedule_rows(P, t["rate"], n, t["tax"])
     slug = f"{tkey}-kredisi-{P}-tl-{n}-ay.html"
-    title = f"{fmt0(P)} TL {t['name']} Hesaplama — {n} Ay Vade Taksiti ({CHECKED})"
+    title = f"{fmt0(P)} TL {t['name']} Hesaplama — {n} Ay Vade Taksiti ({checked})"
     desc = (f"{fmt0(P)} TL {t['name'].lower()} {n} ay vadede aylık taksiti {fmt(pay)}. "
             f"En düşük faiz %{t['rate']:.2f} ({t['bank']}). Toplam geri ödeme ve ödeme planını saniyeler içinde görün.")
     h1 = f"{fmt0(P)} TL {t['name']} — {n} Ay Vade Taksit Hesaplama"
@@ -152,7 +153,7 @@ def page(tkey, t, P, n):
         (f"{fmt0(P)} TL kredinin toplam maliyeti nedir?",
          f"{n} ay vadede toplam faiz ve vergi yükü yaklaşık {fmt(cost)} olur; anaparayla birlikte {fmt(total)} geri ödersiniz."),
         ("Bu oranlar güncel mi?",
-         f"Oranlar HangiKredi.com'da yayımlanan en düşük banka tekliflerinden alınmıştır. Son kontrol: {CHECKED}. Bankaların güncel oranları değişiklik gösterebilir."),
+         f"Oranlar HangiKredi.com'da yayımlanan en düşük banka tekliflerinden alınmıştır. Son kontrol: {checked}. Bankaların güncel oranları değişiklik gösterebilir."),
     ]
     faq_html = "".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in faq_items)
     faq_ld = ",".join(
@@ -182,7 +183,7 @@ def page(tkey, t, P, n):
 <style>{CSS}</style></head><body>
 <header><div class="wrap"><a class="brand" href="../index.html">kredi<span>oran</span>.com</a>
 <h1>{t['icon']} {h1}</h1>
-<div class="upd">Son güncelleme: {CHECKED} · Kaynak: HangiKredi.com</div></div></header>
+<div class="upd">Son güncelleme: {checked} · Kaynak: HangiKredi.com</div></div></header>
 <main class="wrap">
 <div class="hero">
   <div><div class="l">Aylık Taksit</div><div class="v am">{fmt(pay)}</div></div>

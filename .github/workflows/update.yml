@@ -1,6 +1,14 @@
 name: Günlük Oran Güncelleme
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update.yml'
+      - 'update_rates.py'
+      - 'test_update_rates.py'
+      - 'kriweb/**'
   schedule:
     - cron: '0 5 * * *'
     - cron: '0 8 * * *'

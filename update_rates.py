@@ -1,166 +1,216 @@
 # -*- coding: utf-8 -*-
-"""
-update_rates.py — hangikredi.com'dan en düşük oranları çekip rates.json'ı günceller.
-Sayfa yapısı değişir veya istek başarısız olursa ESKİ ORAN KORUNUR (site asla bozulmaz).
-"""
+"""Kredi oranlarını doğrulanmış karşılaştırma sayfalarından günceller."""
 import html as htmllib
-import json, re, sys
-from datetime import datetime, timezone, timedelta
+import json
+import os
+import re
+import sys
+from datetime import datetime, timedelta, timezone
 
-TR = timezone(timedelta(hours=3))  # Türkiye saati (yıl boyu sabit)
+TR = timezone(timedelta(hours=3))
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
-PAGES = {
-    "ihtiyac": "https://www.hangikredi.com/kredi/ihtiyac-kredisi",
-    "tasit":   "https://www.hangikredi.com/kredi/tasit-kredisi",
-    "konut":   "https://www.hangikredi.com/kredi/konut-kredisi",
+TARGETS = {
+    "ihtiyac": {"amount": 10_000, "term": 36},
+    "tasit": {"amount": 200_000, "term": 48},
+    "konut": {"amount": 500_000, "term": 120},
 }
 
-# hangikredi cümlesi (tag/HTML-yorumları temizlendikten sonra), ör:
-#   "... 36 ay vadeli 10.000 TL İhtiyaç Kredisi için en avantajlı teklifi sunan
-#    banka %2,99 Faiz oranı ile ING,DenizBank oldu."
-# Katılım bankalarında "Faiz oranı" yerine "Kâr Payı oranı" yazar.
-PATTERN = re.compile(
-    r"(\d+)\s*ay\s*vadeli\s*([\d.]+)\s*TL.{0,300}?"
-    r"en avantajl[ıi].{0,120}?%\s*([\d,.]+)\s*"
-    r"(?:Faiz|K[âa]r\s*Pay[ıi])\s*oran[ıi](?:\s*ile|yla|yle)?\s*"
-    r"([^.]{2,80}?)\s*oldu",
-    re.I | re.S,
+SOURCES = {
+    "hesapkurdu": {
+        "ihtiyac": "https://www.hesapkurdu.com/ihtiyac-kredisi/36-ay-10000-tl",
+        "tasit": "https://www.hesapkurdu.com/tasit-kredisi/48-ay-200000-tl-tl-ikinci-el",
+        "konut": "https://www.hesapkurdu.com/konut-kredisi/120-ay-500000-tl",
+    },
+    "enuygun": {
+        "ihtiyac": "https://www.enuygun.com/kredi/ihtiyac-kredisi/",
+        "tasit": "https://www.enuygun.com/kredi/tasit-kredisi/",
+        "konut": "https://www.enuygun.com/kredi/konut-kredisi/",
+    },
+}
+
+BANKS = (
+    "Alternatif Bank", "Albaraka Türk", "Anadolubank", "Aktif Bank", "Akbank",
+    "CEPTETEB", "DenizBank", "Dünya Katılım", "Enpara.com", "Garanti BBVA",
+    "GetirFinans", "getirfinans", "Halkbank", "HSBC", "ICBC Turkey", "ING",
+    "İş Bankası", "Kuveyt Türk", "ON Dijital Bankacılık", "QNB", "Şekerbank",
+    "TEB", "Türkiye Finans Katılım Bankası", "Vakıf Katılım", "Yapı Kredi",
+    "Ziraat Bankası", "Ziraat Katılım",
 )
 
 HEADERS = {
-    "User-Agent": "KrediOranBot/1.1 (+https://kredioran.com)",
+    "User-Agent": "KrediOranBot/2.0 (+https://kredioran.com)",
     "Accept": "text/html,application/xhtml+xml",
     "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7",
 }
 BLOCK_MARKERS = (
-    "sorry, you have been blocked",
-    "attention required!",
-    "verify you are human",
-    "checking your browser",
-    "cf-ray",
+    "sorry, you have been blocked", "attention required!", "verify you are human",
+    "checking your browser", "cf-ray",
 )
 
 
+def clean(raw: str) -> str:
+    text = htmllib.unescape(raw)
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    text = re.sub(r"<script\b.*?</script>|<style\b.*?</style>", " ", text, flags=re.I | re.S)
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def build_session():
-    """Geçici sunucu/rate-limit hatalarını sınırlı ve gecikmeli olarak tekrar dene."""
-    retry = Retry(
-        total=3,
-        connect=3,
-        read=3,
-        backoff_factor=2,
-        status_forcelist=(429, 500, 502, 503, 504),
-        allowed_methods=("GET",),
-        respect_retry_after_header=True,
-    )
+    import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+    retry = Retry(total=2, connect=2, read=2, backoff_factor=2,
+                  status_forcelist=(429, 500, 502, 503, 504), allowed_methods=("GET",),
+                  respect_retry_after_header=True)
     session = requests.Session()
     session.headers.update(HEADERS)
     session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
 
 
-def fetch(session, key, url):
-    """HTTP, içerik tipi ve güvenlik engelini parse hatasından ayır."""
-    response = session.get(url, timeout=30)
+def fetch(session, source, key, url):
+    response = session.get(url, timeout=35)
     content_type = response.headers.get("content-type", "")
-    print(
-        f"[HTTP] {key}: status={response.status_code}, "
-        f"type={content_type or '-'}, size={len(response.content)}"
-    )
+    print(f"[HTTP] {source}/{key}: status={response.status_code}, type={content_type or '-'}, size={len(response.content)}")
     response.raise_for_status()
     if "html" not in content_type.lower():
         raise ValueError(f"beklenmeyen içerik tipi: {content_type or 'bilinmiyor'}")
-    body = response.text
-    low = body.lower()
-    if any(marker in low for marker in BLOCK_MARKERS):
-        raise RuntimeError("Cloudflare/bot koruması yanıtı")
-    return body
+    if any(marker in response.text.lower() for marker in BLOCK_MARKERS):
+        raise RuntimeError("bot koruması yanıtı")
+    return response.text
 
 
-def clean(raw: str) -> str:
-    """HTML entity'lerini çöz, yorum ve etiketleri at, boşlukları sadeleştir."""
-    t = htmllib.unescape(raw)
-    t = re.sub(r"<!--.*?-->", "", t, flags=re.S)
-    t = re.sub(r"<[^>]+>", " ", t)
-    return re.sub(r"\s+", " ", t)
+def load_pages():
+    snapshot_path = os.getenv("RATE_SNAPSHOT_FILE")
+    if snapshot_path:
+        with open(snapshot_path, encoding="utf-8") as handle:
+            snapshot = json.load(handle)
+        pages = {}
+        for source, categories in snapshot.get("pages", {}).items():
+            pages[source] = {}
+            for key, result in categories.items():
+                status = int(result.get("status", 0))
+                body = result.get("body", "")
+                print(f"[KRIWEB] {source}/{key}: status={status}, size={len(body)}")
+                if status == 200 and body:
+                    pages[source][key] = body
+        return pages
+
+    import requests
+    session = build_session()
+    pages = {}
+    for source, categories in SOURCES.items():
+        pages[source] = {}
+        for key, url in categories.items():
+            try:
+                pages[source][key] = fetch(session, source, key, url)
+            except (requests.RequestException, ValueError, RuntimeError) as exc:
+                print(f"[KAYNAK HATASI] {source}/{key}: {exc}")
+    return pages
 
 
-def parse(html: str):
-    m = PATTERN.search(clean(html))
-    if not m:
+def _page_matches_target(text, amount, term):
+    amount_text = f"{amount:,}".replace(",", ".")
+    amount_ok = re.search(rf"{re.escape(amount_text)}\s*TL", text, re.I)
+    term_ok = re.search(rf"{term}\s*Ay", text, re.I)
+    return bool(amount_ok and term_ok)
+
+
+def parse_offers(raw_html, amount, term):
+    """Kampanya kartlarını değil, toplam ödeme içeren gerçek kredi tekliflerini seç."""
+    text = clean(raw_html)
+    if not _page_matches_target(text, amount, term):
         return None
-    term = int(m.group(1))
-    amount = int(m.group(2).replace(".", ""))
-    rate = float(m.group(3).replace(",", "."))
-    bank = re.sub(r"\s*,\s*", ", ", m.group(4).strip())
-    # Mantık kontrolleri — saçma değer geldiyse reddet
-    if not (0.1 <= rate <= 15 and 3 <= term <= 360 and 1_000 <= amount <= 50_000_000 and 2 <= len(bank) <= 40):
+    offers = []
+    for bank in BANKS:
+        for match in re.finditer(re.escape(bank), text, re.I):
+            window = text[match.start():match.start() + 420]
+            rate_match = re.search(
+                r"(?:Faiz\s*Oran[ıi]|K[âa]r\s*Pay[ıi]|Ayl[ıi]k\s*Faiz)\s*%?\s*([0-9]+(?:[,.][0-9]+)?)"
+                r".{0,180}?Toplam\s*(?:Geri\s*)?[ÖO]deme",
+                window, re.I | re.S,
+            )
+            if not rate_match:
+                continue
+            rate = float(rate_match.group(1).replace(",", "."))
+            if 0.1 <= rate <= 15:
+                offers.append((rate, bank))
+    if not offers:
         return None
-    return {"bank": bank, "rate": rate, "amount": amount, "term": term}
+    best_rate = min(rate for rate, _ in offers)
+    best_banks = sorted({bank for rate, bank in offers if abs(rate - best_rate) < 0.001})
+    return {"bank": ", ".join(best_banks), "rate": best_rate, "amount": amount, "term": term}
+
+
+def choose_rate(key, pages):
+    target = TARGETS[key]
+    primary = parse_offers(pages.get("hesapkurdu", {}).get(key, ""), **target)
+    secondary = parse_offers(pages.get("enuygun", {}).get(key, ""), **target)
+    if primary and secondary:
+        difference = abs(primary["rate"] - secondary["rate"])
+        if difference > 0.75:
+            raise ValueError(f"kaynaklar arası oran farkı yüksek: %{primary['rate']} / %{secondary['rate']}")
+        primary["source"] = "Hesapkurdu (Enuygun ile doğrulandı)"
+        print(f"[DOĞRULANDI] {key}: Hesapkurdu %{primary['rate']}, Enuygun %{secondary['rate']}")
+        return primary
+    if primary:
+        primary["source"] = "Hesapkurdu"
+        print(f"[ANA KAYNAK] {key}: Enuygun doğrulaması yok; Hesapkurdu sonucu kullanılıyor")
+        return primary
+    if secondary:
+        secondary["source"] = "Enuygun (yedek)"
+        print(f"[YEDEK KAYNAK] {key}: Hesapkurdu okunamadı; Enuygun sonucu kullanılıyor")
+        return secondary
+    return None
 
 
 def main():
-    with open("rates.json", encoding="utf-8") as f:
-        rates = json.load(f)
+    with open("rates.json", encoding="utf-8") as handle:
+        rates = json.load(handle)
+    pages = load_pages()
+    now_iso = datetime.now(TR).isoformat(timespec="minutes")
+    changed, succeeded, failed = False, [], []
 
-    now = datetime.now(TR)
-    now_iso = now.isoformat(timespec="minutes")
-    changed = False
-    succeeded = []
-    failed = []
-    session = build_session()
-    for key, url in PAGES.items():
+    for key in TARGETS:
         try:
-            page_html = fetch(session, key, url)
-        except (requests.RequestException, ValueError, RuntimeError) as e:
-            failed.append((key, f"HTTP/kaynak hatası: {e}"))
-            print(f"[KAYNAK HATASI] {key}: {e} — eski oran korunuyor")
-            continue
-
-        new = parse(page_html)
+            new = choose_rate(key, pages)
+        except ValueError as exc:
+            new = None
+            failed.append((key, str(exc)))
         if new is None:
-            failed.append((key, "beklenen oran cümlesi bulunamadı"))
-            print(f"[PARSE HATASI] {key}: beklenen oran cümlesi bulunamadı. "
-                  f"Eski oran korunuyor (%{rates[key]['rate']} {rates[key]['bank']}).")
+            if not any(item[0] == key for item in failed):
+                failed.append((key, "hedef tutar/vadeye ait doğrulanabilir teklif bulunamadı"))
+            print(f"[KORUNDU] {key}: eski doğrulanmış oran korunuyor")
             continue
 
-        cur = {k: rates[key].get(k) for k in ("bank", "rate", "amount", "term")}
+        current = {field: rates[key].get(field) for field in ("bank", "rate", "amount", "term")}
+        comparable = {field: new[field] for field in ("bank", "rate", "amount", "term")}
         old_updated = rates[key].get("updated", rates.get("updated"))
-        if new != cur:
-            print(f"[GÜNCELLENDİ] {key}: %{cur['rate']} {cur['bank']} → "
-                  f"%{new['rate']} {new['bank']} ({new['term']} ay, {new['amount']} TL)")
+        if comparable != current:
             new["updated"] = now_iso
             changed = True
-        else:
-            print(f"[AYNI] {key}: %{new['rate']} {new['bank']}")
-            if old_updated:
-                new["updated"] = old_updated
+            print(f"[GÜNCELLENDİ] {key}: %{current['rate']} {current['bank']} → %{new['rate']} {new['bank']}")
+        elif old_updated:
+            new["updated"] = old_updated
         new["checked"] = now_iso
         rates[key] = new
         succeeded.append(key)
 
-    # Geriye dönük uyumluluk: üst seviye checked, üç kategorinin de doğrulandığı en eski zamanı gösterir.
     legacy_checked = rates.get("checked", now_iso)
-    checked_values = [rates[key].get("checked", legacy_checked) for key in PAGES]
-    rates["checked"] = min(checked_values)
+    rates["checked"] = min(rates[key].get("checked", legacy_checked) for key in TARGETS)
     if changed or "T" not in str(rates.get("updated", "")):
         rates["updated"] = now_iso
-
-    with open("rates.json", "w", encoding="utf-8") as f:
-        json.dump(rates, f, ensure_ascii=False, indent=2)
+    with open("rates.json", "w", encoding="utf-8") as handle:
+        json.dump(rates, handle, ensure_ascii=False, indent=2)
 
     print("changed" if changed else "no-change")
-
     if failed:
         summary = "; ".join(f"{key}: {reason}" for key, reason in failed)
         if succeeded:
-            print(f"::warning::Kısmi oran güncellemesi. {summary}. "
-                  "Başarısız kategorilerde eski doğrulanmış oran ve tarih korundu.")
+            print(f"::warning::Kısmi oran güncellemesi. {summary}")
         else:
-            print(f"::error::Hiçbir oran kaynağı doğrulanamadı. {summary}. Site yayınlanmadı.")
+            print(f"::error::Hiçbir kategori doğrulanamadı. {summary}. Site yayınlanmadı.")
             sys.exit(1)
 
 

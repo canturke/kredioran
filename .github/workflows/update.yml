@@ -2,17 +2,16 @@ name: Günlük Oran Güncelleme
 
 on:
   schedule:
-    - cron: '0 5 * * *'    # Her gün 05:00 UTC = 08:00 Türkiye
-    - cron: '0 8 * * *'    # Her gün 08:00 UTC = 11:00 Türkiye
-    - cron: '0 12 * * *'   # Her gün 12:00 UTC = 15:00 Türkiye
-    - cron: '0 15 * * *'   # Her gün 15:00 UTC = 18:00 Türkiye
-  workflow_dispatch:        # Elle de tetiklenebilir (Actions sekmesi → Run workflow)
+    - cron: '0 5 * * *'
+    - cron: '0 8 * * *'
+    - cron: '0 12 * * *'
+    - cron: '0 15 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 env:
-  # Node.js 20 kullanımdan kaldırılıyor; action'ları Node.js 24 ile çalıştır.
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -30,13 +29,55 @@ jobs:
       - name: Bağımlılıklar
         run: pip install requests pillow
 
-      - name: Oranları hangikredi'den çek
+      - name: Ayrıştırıcı testleri
+        run: python -m unittest -v test_update_rates.py
+
+      - name: Tek kullanımlık Kriweb toplayıcısını hazırla
+        id: collector
+        shell: bash
+        run: |
+          token="$(openssl rand -hex 32)"
+          name="collector-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.php"
+          mkdir -p runtime
+          sed "s/__TOKEN__/${token}/g" kriweb/collector.php.template > "runtime/${name}"
+          echo "token=${token}" >> "$GITHUB_OUTPUT"
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+
+      - name: Toplayıcıyı Kriweb'e geçici yükle
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./runtime/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}.runtime/
+          dangerous-clean-slate: false
+
+      - name: Veriyi Kriweb IP'si üzerinden topla
+        shell: bash
+        env:
+          COLLECTOR_TOKEN: ${{ steps.collector.outputs.token }}
+          COLLECTOR_NAME: ${{ steps.collector.outputs.name }}
+        run: |
+          curl --fail-with-body --silent --show-error --retry 2 \
+            --get --data-urlencode "token=${COLLECTOR_TOKEN}" \
+            "https://kredioran.com/.runtime/${COLLECTOR_NAME}" \
+            --output source_snapshot.json
+          python -c 'import json; d=json.load(open("source_snapshot.json")); print({s:{k:v["status"] for k,v in c.items()} for s,c in d["pages"].items()})'
+
+      - name: Oranları Hesapkurdu ve Enuygun'dan güncelle
+        env:
+          RATE_SNAPSHOT_FILE: source_snapshot.json
         run: python update_rates.py
+
+      - name: Geçici dosyaları temizle
+        if: always()
+        run: rm -rf runtime source_snapshot.json
 
       - name: Siteyi yeniden üret (115 sayfa + index + sitemap)
         run: python generate_pages.py
 
-      - name: Google Ads banner'larını tazele (örnek taksit oranla güncellenir)
+      - name: Google Ads banner'larını tazele
         run: python make_banners.py
 
       - name: Değişiklikleri repoya işle

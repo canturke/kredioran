@@ -12,6 +12,7 @@ if (!is_string($providedToken) || !hash_equals($expectedToken, $providedToken)) 
     exit;
 }
 
+// Anahtarlı ilk başarılı çağrıdan sonra geçici toplayıcıyı kaldır.
 register_shutdown_function(static function (): void {
     @unlink(__FILE__);
 });
@@ -75,6 +76,5 @@ foreach ($sources as $source => $categories) {
 
 echo json_encode([
     'generated_at' => gmdate(DATE_ATOM),
-    'host' => gethostname(),
     'pages' => $pages,
 ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

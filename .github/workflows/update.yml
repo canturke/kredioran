@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./runtime/
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}.runtime/
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}runtime/
           dangerous-clean-slate: false
 
       - name: Veriyi Kriweb IP'si üzerinden topla
@@ -70,7 +70,7 @@ jobs:
         run: |
           http_status="$(curl --silent --show-error \
             --get --data-urlencode "token=${COLLECTOR_TOKEN}" \
-            "https://kredioran.com/.runtime/${COLLECTOR_NAME}" \
+            "https://kredioran.com/runtime/${COLLECTOR_NAME}" \
             --output source_snapshot.json --write-out '%{http_code}')"
           if [ "${http_status}" != "200" ]; then
             echo "::error::Kriweb toplayıcısı HTTP ${http_status} döndürdü"

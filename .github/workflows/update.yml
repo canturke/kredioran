@@ -45,6 +45,7 @@ jobs:
         shell: bash
         run: |
           token="$(openssl rand -hex 32)"
+          echo "::add-mask::${token}"
           name="collector-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}.php"
           mkdir -p runtime
           sed "s/__TOKEN__/${token}/g" kriweb/collector.php.template > "runtime/${name}"
@@ -67,10 +68,15 @@ jobs:
           COLLECTOR_TOKEN: ${{ steps.collector.outputs.token }}
           COLLECTOR_NAME: ${{ steps.collector.outputs.name }}
         run: |
-          curl --fail-with-body --silent --show-error --retry 2 \
+          http_status="$(curl --silent --show-error \
             --get --data-urlencode "token=${COLLECTOR_TOKEN}" \
             "https://kredioran.com/.runtime/${COLLECTOR_NAME}" \
-            --output source_snapshot.json
+            --output source_snapshot.json --write-out '%{http_code}')"
+          if [ "${http_status}" != "200" ]; then
+            echo "::error::Kriweb toplayıcısı HTTP ${http_status} döndürdü"
+            head -c 2000 source_snapshot.json
+            exit 1
+          fi
           python -c 'import json; d=json.load(open("source_snapshot.json")); print({s:{k:v["status"] for k,v in c.items()} for s,c in d["pages"].items()})'
 
       - name: Oranları Hesapkurdu ve Enuygun'dan güncelle

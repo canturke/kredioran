@@ -1,0 +1,70 @@
+<?php
+declare(strict_types=1);
+
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+
+$expectedToken = '__TOKEN__';
+$providedToken = $_GET['token'] ?? '';
+if (!is_string($providedToken) || !hash_equals($expectedToken, $providedToken)) {
+    http_response_code(404);
+    echo json_encode(['error' => 'not found']);
+    exit;
+}
+
+// Anahtarlı ilk başarılı çağrıdan sonra geçici toplayıcıyı kaldır.
+register_shutdown_function(static function (): void {
+    @unlink(__FILE__);
+});
+
+$sources = [
+    'hesapkurdu' => [
+        'ihtiyac' => 'https://www.hesapkurdu.com/ihtiyac-kredisi/36-ay-10000-tl',
+        'tasit' => 'https://www.hesapkurdu.com/tasit-kredisi/48-ay-200000-tl-tl-ikinci-el',
+        'konut' => 'https://www.hesapkurdu.com/konut-kredisi/120-ay-500000-tl',
+    ],
+    'enuygun' => [
+        'ihtiyac' => 'https://www.enuygun.com/kredi/ihtiyac-kredisi/',
+        'tasit' => 'https://www.enuygun.com/kredi/tasit-kredisi/',
+        'konut' => 'https://www.enuygun.com/kredi/konut-kredisi/',
+    ],
+];
+
+function fetchPage(string $url): array {
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_MAXREDIRS => 4,
+        CURLOPT_CONNECTTIMEOUT => 12,
+        CURLOPT_TIMEOUT => 35,
+        CURLOPT_USERAGENT => 'KrediOranBot/2.0 (+https://kredioran.com)',
+        CURLOPT_HTTPHEADER => ['Accept: text/html,application/xhtml+xml', 'Accept-Language: tr-TR,tr;q=0.9'],
+        CURLOPT_ENCODING => '',
+    ]);
+    $body = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+    $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    return [
+        'url' => $url,
+        'status' => $status,
+        'content_type' => $contentType,
+        'body' => is_string($body) ? $body : '',
+        'error' => $error,
+    ];
+}
+
+$pages = [];
+foreach ($sources as $source => $categories) {
+    foreach ($categories as $category => $url) {
+        $pages[$source][$category] = fetchPage($url);
+    }
+}
+
+echo json_encode([
+    'generated_at' => gmdate(DATE_ATOM),
+    'host' => gethostname(),
+    'pages' => $pages,
+], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

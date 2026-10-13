@@ -12,7 +12,6 @@ if (!is_string($providedToken) || !hash_equals($expectedToken, $providedToken)) 
     exit;
 }
 
-// Anahtarlı ilk başarılı çağrıdan sonra geçici toplayıcıyı kaldır.
 register_shutdown_function(static function (): void {
     @unlink(__FILE__);
 });
@@ -31,22 +30,33 @@ $sources = [
 ];
 
 function fetchPage(string $url): array {
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_MAXREDIRS => 4,
-        CURLOPT_CONNECTTIMEOUT => 12,
-        CURLOPT_TIMEOUT => 35,
-        CURLOPT_USERAGENT => 'KrediOranBot/2.0 (+https://kredioran.com)',
-        CURLOPT_HTTPHEADER => ['Accept: text/html,application/xhtml+xml', 'Accept-Language: tr-TR,tr;q=0.9'],
-        CURLOPT_ENCODING => '',
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'GET',
+            'timeout' => 35,
+            'ignore_errors' => true,
+            'follow_location' => 1,
+            'max_redirects' => 4,
+            'user_agent' => 'KrediOranBot/2.0 (+https://kredioran.com)',
+            'header' => "Accept: text/html,application/xhtml+xml\r\nAccept-Language: tr-TR,tr;q=0.9\r\nAccept-Encoding: identity\r\n",
+        ],
+        'ssl' => [
+            'verify_peer' => true,
+            'verify_peer_name' => true,
+        ],
     ]);
-    $body = curl_exec($ch);
-    $status = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-    $contentType = (string) curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-    $error = curl_error($ch);
-    curl_close($ch);
+    $body = @file_get_contents($url, false, $context);
+    $headers = $http_response_header ?? [];
+    $status = 0;
+    $contentType = '';
+    foreach ($headers as $header) {
+        if (preg_match('/^HTTP\\/\\S+\\s+(\\d{3})/', $header, $match)) {
+            $status = (int) $match[1];
+        } elseif (stripos($header, 'Content-Type:') === 0) {
+            $contentType = trim(substr($header, strlen('Content-Type:')));
+        }
+    }
+    $error = $body === false ? (error_get_last()['message'] ?? 'stream request failed') : '';
     return [
         'url' => $url,
         'status' => $status,
